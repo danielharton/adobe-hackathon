@@ -1,0 +1,25 @@
+*{
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+.main-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+}
+
+.navbar{
+    width: 100vw;
+}
+
+/* removed legacy map styles */
+
+.user-profile{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+}

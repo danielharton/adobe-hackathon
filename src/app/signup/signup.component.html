@@ -1,0 +1,163 @@
+<div class="form-wrapper">
+
+  <img class="background-image" src="https://images.unsplash.com/photo-1517433456452-f9633a875f6f?q=80&w=1600&auto=format&fit=crop" alt="Office desk background">
+
+  <form #signupFormBox mat-form class="signup-form" [formGroup]="signupFormGroup" (ngSubmit)="signup()" [style.max-height.px]="formMaxHeight">
+    <mat-form-field class="form-field sticky-name" style="width: 100%;">
+      <mat-label>Full name</mat-label>
+      <input #nameInput
+        matInput
+        type="text"
+        formControlName="nameFormControl"
+        name="name"
+        required
+      />
+      <mat-error *ngIf="signupFormGroup.get('nameFormControl')?.hasError('required')">
+        Name is <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="signupFormGroup.get('nameFormControl')?.hasError('minlength')">
+        Name must be at least 2 characters
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="form-field" style="width: 100%;">
+      <mat-label>Email</mat-label>
+      <input
+        matInput
+        type="email"
+        formControlName="emailFormControl"
+        name="email"
+        required
+      />
+      <mat-error *ngIf="signupFormGroup.get('emailFormControl')?.hasError('email') && !signupFormGroup.get('emailFormControl')?.hasError('required')">
+        Please enter a valid email address
+      </mat-error>
+      <mat-error *ngIf="signupFormGroup.get('emailFormControl')?.hasError('required')">
+        Email is <strong>required</strong>
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="form-field" style="width: 100%;">
+      <mat-label>Phone number</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="phoneFormControl"
+        name="number"
+        required
+      />
+      <mat-error *ngIf="signupFormGroup.get('phoneFormControl')?.hasError('required')">
+        Phone is <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="signupFormGroup.get('phoneFormControl')?.hasError('pattern')">
+        Please enter a valid 10-digit phone number
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="form-field" style="width: 100%;">
+      <mat-label>Password</mat-label>
+      <input
+        matInput
+        [type]="hidePassword ? 'password' : 'text'"
+        formControlName="passwordFormControl"
+        name="password"
+        required
+      />
+      <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword"
+        [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hidePassword">
+        <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+      </button>
+      <mat-error *ngIf="signupFormGroup.get('passwordFormControl')?.hasError('required')">
+        Password is <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="signupFormGroup.get('passwordFormControl')?.hasError('minlength')">
+        Password must be at least 6 characters
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="form-field" style="width: 100%;">
+      <mat-label>Confirm Password</mat-label>
+      <input
+        matInput
+        [type]="hideConfirmPassword ? 'password' : 'text'"
+        formControlName="confirmPasswordFormControl"
+        name="confirmPassword"
+        required
+      />
+      <button mat-icon-button matSuffix (click)="hideConfirmPassword = !hideConfirmPassword"
+        [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hideConfirmPassword">
+        <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+      </button>
+      <mat-error *ngIf="signupFormGroup.get('confirmPasswordFormControl')?.hasError('required')">
+        Please confirm your password
+      </mat-error>
+      <mat-error *ngIf="signupFormGroup.hasError('passwordMismatch')">
+        Passwords do not match
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="form-field" style="width: 100%;">
+      <mat-label>Role</mat-label>
+      <mat-select formControlName="typeFormControl">
+        <mat-option value="executant">Executant (Employee)</mat-option>
+        <mat-option value="manager">Manager</mat-option>
+      </mat-select>
+      <mat-error *ngIf="signupFormGroup.get('typeFormControl')?.hasError('required')">
+        Role is <strong>required</strong>
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Department combobox with search -->
+    <div class="department-combobox">
+      <mat-form-field class="form-field" style="width: 100%;" floatLabel="always">
+        <mat-label>Department</mat-label>
+        <input matInput [value]="selectedDepartmentName || departmentSearch"
+               (focus)="openDeptDropdown()"
+               (input)="onDepartmentSearch($any($event.target).value)"
+               (keydown.enter)="confirmDepartment()"
+               placeholder="Search department..." required>
+        <mat-error *ngIf="signupFormGroup.get('departmentFormControl')?.hasError('required') && !selectedDepartmentName">
+          Department is <strong>required</strong>
+        </mat-error>
+      </mat-form-field>
+      <div class="department-dropdown" *ngIf="departmentDropdownOpen">
+        <div class="dept-option" *ngFor="let d of filteredDepartments" (click)="selectDepartment(d.name)">{{ d.name }}</div>
+        <div class="dept-option add" *ngIf="departmentSearch && !hasDeptExactMatch(departmentSearch)" (click)="selectDepartment(departmentSearch)">
+          Add "{{ departmentSearch }}"
+        </div>
+      </div>
+    </div>
+
+    <!-- Manager employees multi-select (only when role is manager) -->
+    <div *ngIf="signupFormGroup.get('typeFormControl')?.value === 'manager'" class="manager-assign">
+      <mat-form-field class="form-field" style="width: 100%;" floatLabel="always">
+        <mat-label>Assign employees (optional)</mat-label>
+        <input matInput [value]="employeeSearch" (focus)="openEmployeesList()" (input)="onEmployeeSearch($any($event.target).value)" placeholder="Search employees by name or email...">
+      </mat-form-field>
+      <div class="employees-list" *ngIf="employeesListOpen">
+        <label class="emp-item" *ngFor="let e of filteredEmployees">
+          <input type="checkbox" [checked]="selectedEmployeeIds.includes(e.id)" (change)="toggleEmployee(e.id)"> {{ e.name }} ({{ e.email }})
+        </label>
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message" style="color: red; margin: 10px 0; padding: 10px; background-color: #ffebee; border-radius: 4px;">
+      {{ errorMessage }}
+    </div>
+    <div *ngIf="successMessage" class="success-message" style="color: green; margin: 10px 0; padding: 10px; background-color: #e8f5e9; border-radius: 4px;">
+      {{ successMessage }}
+    </div>
+
+    <button mat-raised-button 
+            type="submit"
+            [disabled]="isLoading || signupFormGroup.invalid"
+            style="background: linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%); color: white; width: 100%;">
+      <span *ngIf="!isLoading">Sign Up</span>
+      <span *ngIf="isLoading">Creating account...</span>
+    </button>
+
+    <div style="margin-top: 15px; text-align: center;">
+      <a routerLink="/login" style="color: #2196F3; text-decoration: none;">Already have an account? Login</a>
+    </div>
+  </form>
+</div>

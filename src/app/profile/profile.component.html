@@ -1,0 +1,40 @@
+<app-navbar></app-navbar>
+<div class="profile-container" *ngIf="user">
+  <div class="profile-card">
+    <div class="avatar" [style.background-image]="avatar ? 'url(' + avatar + ')' : ''">
+      <span *ngIf="!avatar">{{ (name || user?.name || 'U').charAt(0).toUpperCase() }}</span>
+    </div>
+    <div class="info">
+      <h2>{{ name || user?.name }}</h2>
+      <div class="row">Department: <strong>{{ departmentName || $any(user)?.departmentName || '—' }}</strong></div>
+      <div class="row">Manager: <strong>{{ $any(user)?.managerName || '—' }}</strong></div>
+      <div class="row">Phone: <strong>{{ phone || user?.phone }}</strong></div>
+    </div>
+  </div>
+
+  <div class="settings" *ngIf="isOwner">
+    <button mat-stroked-button (click)="toggleEdit()">{{ edit ? 'Cancel' : 'Edit profile' }}</button>
+    <div class="edit-form" *ngIf="edit">
+      <mat-form-field style="width:100%"><mat-label>Full name</mat-label><input matInput [(ngModel)]="name"></mat-form-field>
+      <mat-form-field style="width:100%"><mat-label>Phone</mat-label><input matInput [(ngModel)]="phone"></mat-form-field>
+      <mat-form-field style="width:100%"><mat-label>Avatar URL</mat-label><input matInput [(ngModel)]="avatar"></mat-form-field>
+      <div class="dept-combobox">
+        <mat-form-field style="width:100%">
+          <mat-label>Department</mat-label>
+          <input matInput [value]="departmentName || deptSearch" (focus)="openDeptDropdown()" (input)="onDeptSearch($any($event.target).value)" (keydown.enter)="selectDept(deptSearch || departmentName)">
+        </mat-form-field>
+        <div class="dept-dropdown" *ngIf="deptDropdownOpen">
+          <div class="dept-option" *ngFor="let d of departments | slice:0:50" (click)="selectDept(d.name)">{{ d.name }}</div>
+          <div class="dept-option add" *ngIf="deptSearch && !hasDeptExact(deptSearch)" (click)="selectDept(deptSearch)">Add "{{ deptSearch }}"</div>
+        </div>
+      </div>
+      <button mat-raised-button color="primary" (click)="save()">Save</button>
+    </div>
+  </div>
+
+  <div class="manager-controls" *ngIf="!isOwner && isManager">
+    <button *ngIf="!isSubordinate" mat-raised-button color="primary" style="background:#1976D2; color:#fff; margin-top:10px;" (click)="addEmployee()">Add employee</button>
+    <button *ngIf="isSubordinate" mat-raised-button style="margin-top:10px; background:#fff; color:#1976D2; border:1px solid #1976D2;" (click)="removeEmployee()">Remove employee</button>
+  </div>
+</div>
+

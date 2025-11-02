@@ -1,0 +1,60 @@
+<router-outlet></router-outlet>
+
+<!-- Chat bubble (bottom-left) -->
+<div class="chat-bubble" *ngIf="!hideChatUI" (click)="toggleChatPanel()">💬</div>
+
+<!-- Chat side panel (placed outside bubble to avoid nested click issues) -->
+<div class="chat-panel" *ngIf="showChatPanel && !hideChatUI" (click)="$event.stopPropagation()">
+  <div class="chat-panel-header">Messages</div>
+  <div class="chat-search">
+    <input placeholder="Search users..." [value]="chatSearch" (input)="onChatSearch($any($event.target).value)">
+  </div>
+  <div class="chat-results">
+    <div class="chat-user" *ngFor="let u of chatFilteredUsers" (click)="openConversation(u)">{{ u.name }}</div>
+  </div>
+  <div class="chat-conversations">
+    <div class="conv-title">Conversations</div>
+    <div class="conv-item" *ngFor="let c of chatConversations">{{ c.title }}</div>
+  </div>
+</div>
+<div class="chat-backdrop" *ngIf="showChatPanel && !hideChatUI" (click)="toggleChatPanel()"></div>
+
+<!-- Chatbot bubble (bottom-right) -->
+<div class="chatbot-bubble" *ngIf="!hideChatUI" (click)="toggleChatbot()">🤖</div>
+
+<!-- Chatbot overlay -->
+<div class="chatbot-overlay" *ngIf="showChatbot && !hideChatUI" (click)="closeChatbot()">
+  <div class="chatbot-dialog" (click)="$event.stopPropagation()">
+    <div class="chatbot-header">
+      <div class="title">TeamLab Assistant</div>
+      <div class="actions"><button mat-stroked-button (click)="closeChatbot()">Close</button></div>
+    </div>
+    <div class="chatbot-body">
+      <div class="bot-msg" *ngFor="let m of chatbotMessages" [class.me]="$any(m).role === 'me'">{{ m.text }}</div>
+    </div>
+    <div class="chatbot-input">
+      <input #botInput placeholder="Ask me anything..." (keydown.enter)="sendChatbotMessage(botInput)">
+      <button mat-stroked-button (click)="sendChatbotMessage(botInput)">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- Conversation overlay -->
+<div class="conversation-overlay" *ngIf="showConversation" (click)="closeConversation()">
+  <div class="conversation-dialog" (click)="$event.stopPropagation()">
+    <div class="conversation-header">
+      <div class="title">{{ selectedChatUser?.name }}</div>
+      <div class="actions"><button mat-stroked-button (click)="closeConversation()">Close</button></div>
+    </div>
+    <div class="conversation-body">
+      <div *ngIf="messages.length === 0" class="empty">Start your conversation with {{ selectedChatUser?.name }}...</div>
+      <div *ngFor="let m of messages" [class.msg-me]="$any(m).senderId === $any(selectedChatUser)?.id ? false : true" [class.msg-other]="$any(m).senderId === $any(selectedChatUser)?.id">
+        <div class="bubble">{{ m.text }}</div>
+      </div>
+    </div>
+    <div class="conversation-input">
+      <input #msgInput placeholder="Type a message..." (keydown.enter)="sendMessage(msgInput)">
+      <button mat-stroked-button (click)="sendMessage(msgInput)">Send</button>
+    </div>
+  </div>
+</div>

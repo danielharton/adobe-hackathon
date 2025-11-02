@@ -1,0 +1,36 @@
+<mat-toolbar color="primary">
+  <div class="navbar-left">
+    <p class="app-name">TeamLabs</p>
+    <p class="company-name">by RestInPointers</p>
+  </div>
+  <div class="navbar-right" *ngIf="isAuthenticated && currentUser">
+    <span style="margin-right: 15px; color: white;">
+      <mat-icon style="vertical-align: middle; margin-right: 5px;">person</mat-icon>
+      {{ currentUser.name }}
+      <span *ngIf="currentUser && currentUser['role']" style="font-size: 12px; opacity: 0.9;">
+        ({{ currentUser['role'] === 'manager' ? 'Manager' : 'Employee' }})
+      </span>
+    </span>
+    <button mat-raised-button routerLink="/home" class="feed-btn" style="margin-right: 10px;">
+      <mat-icon class="feed-btn-icon" style="vertical-align: middle; margin-right: 5px;">home</mat-icon>
+      Feed
+    </button>
+    <button mat-raised-button routerLink="/profile" style="margin-right: 10px; background:#fff; color:#000;">
+      <mat-icon style="vertical-align: middle; margin-right: 5px; color:#000;">account_circle</mat-icon>
+      Profile
+    </button>
+    <button mat-raised-button (click)="logout()" style="background-color: #f44336; color: white;">
+      <mat-icon style="vertical-align: middle; margin-right: 5px;">logout</mat-icon>
+      Logout
+    </button>
+  </div>
+  <div class="navbar-right" *ngIf="!isAuthenticated">
+    <button mat-raised-button routerLink="/login" style="margin-right: 10px; color: white;">
+      Login
+    </button>
+    <button mat-raised-button routerLink="/signup" style="background-color: rgba(255,255,255,0.2); color: white;">
+      Sign Up
+    </button>
+  </div>
+</mat-toolbar>
+

@@ -1,0 +1,50 @@
+
+<div class="form-wrapper">
+
+  <img class="background-image" src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1600&auto=format&fit=crop" alt="Office desk background">
+<form mat-form class="login-form" [formGroup]="loginFormGroup" (ngSubmit)="loginUser()">
+  
+  <mat-form-field class="form-field" style="width: 100%;">
+    <mat-label>Email</mat-label>
+    <input type="email" matInput formControlName="emailFormControl"
+           placeholder="Ex. pat@example.com" required>
+           <mat-error
+           *ngIf="loginFormGroup.controls['emailFormControl'].hasError('email') && !loginFormGroup.controls['emailFormControl'].hasError('required')">
+           Please enter a valid email address
+       </mat-error>
+       <mat-error *ngIf="loginFormGroup.controls['emailFormControl'].hasError('required')">
+           Email is <strong>required</strong>
+       </mat-error>
+  </mat-form-field>
+
+  <mat-form-field style="width: 100%;">
+    <mat-label>Password</mat-label>
+    <input matInput [type]="hidePassword ? 'password' : 'text'"
+        formControlName="passwordFormControl">
+    <mat-error *ngIf="loginFormGroup.controls['passwordFormControl'].hasError('required')">
+        Password <strong>required</strong>
+    </mat-error>
+    <mat-error *ngIf="loginFormGroup.controls['passwordFormControl'].hasError('minlength')">
+        Password must be at least 6 characters
+    </mat-error>
+    <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword"
+        [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hidePassword">
+        <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+    </button>
+</mat-form-field>
+    <div *ngIf="errorMessage" class="error-message" style="color: red; margin: 10px 0; padding: 10px; background-color: #ffebee; border-radius: 4px;">
+      {{ errorMessage }}
+    </div>
+    <button mat-raised-button 
+            type="submit"
+            [disabled]="isLoading || loginFormGroup.invalid"
+            style="background: linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%); color: white; width: 100%;">
+      <span *ngIf="!isLoading">Login</span>
+      <span *ngIf="isLoading">Logging in...</span>
+    </button>
+    <div style="margin-top: 15px; text-align: center;">
+      <a routerLink="/signup" style="color: #2196F3; text-decoration: none;">Don't have an account? Sign up</a>
+    </div>
+  </form>
+</div>
+  

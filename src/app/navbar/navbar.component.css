@@ -1,0 +1,49 @@
+.mat-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: black;
+}
+
+.navbar-left {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  height: 100%;
+  margin-left: 16px;
+}
+
+.navbar-right {
+  margin-right: 16px;
+}
+
+.mat-toolbar span:first-child {
+  margin-left: 16px;
+}
+
+.button-container {
+  display: flex;
+  gap: 16px;
+}
+
+.app-name {
+  font-size: 2rem;
+  font-weight: bold;
+  align-self: center;
+  margin: 0;
+}
+
+.company-name {
+  display: flex;
+  align-items: flex-end;
+  font-size: 0.8rem;
+  margin: 0 0 0.5rem 0.2rem;
+}
+
+.feed-btn {
+  background: #fff;
+  color: #000 !important;
+}
+.feed-btn-icon { color: #000 !important; }
+
+/* removed legacy giver button styles */

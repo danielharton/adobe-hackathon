@@ -1,0 +1,20 @@
+<div style="padding:12px; display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;">
+  <mat-form-field style="flex:1; min-width:200px;"><mat-label>Name</mat-label><input matInput [(ngModel)]="name"></mat-form-field>
+  <mat-form-field style="flex:1; min-width:220px;"><mat-label>Email</mat-label><input matInput [(ngModel)]="email"></mat-form-field>
+  <button mat-raised-button color="primary" (click)="addUser()">Add</button>
+</div>
+
+<table mat-table [dataSource]="users" class="mat-elevation-z1" style="width:100%">
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef>Name</th>
+    <td mat-cell *matCellDef="let u">{{ u.name }}</td>
+  </ng-container>
+  <ng-container matColumnDef="email">
+    <th mat-header-cell *matHeaderCellDef>Email</th>
+    <td mat-cell *matCellDef="let u">{{ u.email }}</td>
+  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="['name','email']"></tr>
+  <tr mat-row *matRowDef="let row; columns: ['name','email'];"></tr>
+</table>
+
+

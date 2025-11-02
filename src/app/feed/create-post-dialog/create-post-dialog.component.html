@@ -1,0 +1,82 @@
+<h2 mat-dialog-title>Create New Post</h2>
+<mat-dialog-content>
+  <form [formGroup]="postForm">
+    <mat-form-field appearance="outline" style="width: 100%;">
+      <mat-label>Title</mat-label>
+      <input matInput formControlName="title" placeholder="Enter post title">
+      <mat-error *ngIf="postForm.get('title')?.hasError('required')">
+        Title is required
+      </mat-error>
+      <mat-error *ngIf="postForm.get('title')?.hasError('minlength')">
+        Title must be at least 3 characters
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" style="width: 100%;">
+      <mat-label>Content</mat-label>
+      <textarea matInput formControlName="content" rows="5" placeholder="What's on your mind?"></textarea>
+      <mat-error *ngIf="postForm.get('content')?.hasError('required')">
+        Content is required
+      </mat-error>
+      <mat-error *ngIf="postForm.get('content')?.hasError('minlength')">
+        Content must be at least 10 characters
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" style="width: 100%;">
+      <mat-label>Post Type</mat-label>
+      <mat-select formControlName="type">
+        <mat-option [value]="postTypes[0]">Task</mat-option>
+        <mat-option [value]="postTypes[1]">Announcement</mat-option>
+        <mat-option [value]="postTypes[2]">Question</mat-option>
+        <mat-option [value]="postTypes[3]">Update</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div *ngIf="showTaskFields" style="margin-top: 15px;">
+      <mat-form-field appearance="outline" style="width: 48%; margin-right: 2%;">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          <mat-option [value]="taskStatuses[0]">To Do</mat-option>
+          <mat-option [value]="taskStatuses[1]">In Progress</mat-option>
+          <mat-option [value]="taskStatuses[2]">Done</mat-option>
+          <mat-option [value]="taskStatuses[3]">Blocked</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" style="width: 48%;">
+        <mat-label>Priority</mat-label>
+        <mat-select formControlName="priority">
+          <mat-option value="low">Low</mat-option>
+          <mat-option value="medium">Medium</mat-option>
+          <mat-option value="high">High</mat-option>
+          <mat-option value="urgent">Urgent</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" style="width: 100%; margin-top: 10px;">
+        <mat-label>Assign To</mat-label>
+        <input matInput formControlName="assignedToName" placeholder="Enter assignee name">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" style="width: 100%;">
+        <mat-label>Due Date</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="dueDate">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" style="width: 100%; margin-top: 10px;">
+      <mat-label>Tags (comma-separated)</mat-label>
+      <input matInput formControlName="tags" placeholder="project, urgent, team">
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="postForm.invalid">
+    Create Post
+  </button>
+</mat-dialog-actions>
+

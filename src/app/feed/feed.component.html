@@ -1,0 +1,284 @@
+<div class="feed-container">
+  <div class="feed-header">
+    <h1>Company Feed</h1>
+    <div class="header-actions">
+      <button mat-stroked-button [matMenuTriggerFor]="filtersMenu">Filters</button>
+      <mat-menu #filtersMenu="matMenu">
+        <button mat-menu-item (click)="openDepartmentsPanel()">Departments</button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="toggleAllTagsToggle()">All Tags</button>
+        <button mat-menu-item *ngFor="let tag of availableTags" (click)="toggleTag(tag, !selectedTags.includes(tag))">
+          <mat-icon>{{ selectedTags.includes(tag) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+          <span style="margin-left: 8px;">{{ tag }}</span>
+        </button>
+      </mat-menu>
+      <button mat-raised-button color="primary" (click)="openCreatePostDialog()">
+        <mat-icon>add</mat-icon>
+        Create Post
+      </button>
+    </div>
+  </div>
+
+  <div class="posts-list">
+    <div *ngFor="let post of filteredPosts" class="post-card" [class.pinned]="post.isPinned">
+        <div class="post-header">
+          <div class="post-author" [routerLink]="['/profile', post['authorUserId'] || post.authorId]" style="cursor:pointer;">
+            <div class="avatar">{{ post.authorName.charAt(0).toUpperCase() }}</div>
+            <div class="author-info">
+              <div class="author-name">{{ post.authorName }}</div>
+            <div class="post-meta">
+              <span class="post-type">{{ post.type }}</span>
+              <span class="post-time">{{ formatDate(post.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="post-actions" *ngIf="post.isPinned">
+          <mat-icon class="pinned-icon">push_pin</mat-icon>
+        </div>
+      </div>
+
+      <div class="post-content">
+        <h3 class="post-title">{{ post.title }}</h3>
+        <p class="post-text">{{ post.content }}</p>
+        
+        <div class="post-tags" *ngIf="post.tags && post.tags.length > 0">
+          <span class="tag" *ngFor="let tag of post.tags">#{{ tag }}</span>
+        </div>
+
+        <!-- Task-specific info -->
+        <div class="task-info" *ngIf="post.type === 'task'">
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+            <span class="status-badge" [style.background-color]="getStatusColor(post.status)">
+              {{ post.status || 'todo' }}
+            </span>
+            <span class="status-badge" *ngIf="post.priority" [style.background-color]="getPriorityColor(post.priority)">
+              {{ post.priority }}
+            </span>
+            <span class="status-badge" *ngIf="post.assignedToName" style="background-color: #E3F2FD; color: #1976D2;">
+              Assigned to: {{ post.assignedToName }}
+            </span>
+            <span class="status-badge" *ngIf="post.dueDate" style="background-color: #FFF3E0; color: #E65100;">
+              Due: {{ formatDate(post.dueDate) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-footer post-footer-grid">
+        <div class="left-actions">
+          <div class="reaction-trigger">
+            <button class="reaction-circle" [ngClass]="[post['userReaction'] ? 'active' : '', post['userReaction']?.type || '']" (click)="onPostReactionButtonClick(post)">
+              <span class="emoji">{{ getReactionEmoji(post['userReaction']?.type || ReactionType.LIKE) }}</span>
+              <span *ngIf="post['userReaction']" class="label">{{ getReactionLabel(post['userReaction']?.type) }}</span>
+            </button>
+            <div class="reactions-flyout">
+              <div class="reaction-option" (click)="toggleReaction(post.id!, ReactionType.LIKE)">
+                <div class="legend">Like</div>
+                <div class="emoji">{{ getReactionEmoji(ReactionType.LIKE) }}</div>
+              </div>
+              <div class="reaction-option" (click)="toggleReaction(post.id!, ReactionType.CELEBRATE)">
+                <div class="legend">Celebrate</div>
+                <div class="emoji">{{ getReactionEmoji(ReactionType.CELEBRATE) }}</div>
+              </div>
+              <div class="reaction-option" (click)="toggleReaction(post.id!, ReactionType.SUPPORT)">
+                <div class="legend">Support</div>
+                <div class="emoji">{{ getReactionEmoji(ReactionType.SUPPORT) }}</div>
+              </div>
+              <div class="reaction-option" (click)="toggleReaction(post.id!, ReactionType.LOVE)">
+                <div class="legend">Love</div>
+                <div class="emoji">{{ getReactionEmoji(ReactionType.LOVE) }}</div>
+              </div>
+              <div class="reaction-option" (click)="toggleReaction(post.id!, ReactionType.INSIGHTFUL)">
+                <div class="legend">Insightful</div>
+                <div class="emoji">{{ getReactionEmoji(ReactionType.INSIGHTFUL) }}</div>
+              </div>
+              <div class="reaction-option" (click)="toggleReaction(post.id!, ReactionType.CURIOUS)">
+                <div class="legend">Curious</div>
+                <div class="emoji">{{ getReactionEmoji(ReactionType.CURIOUS) }}</div>
+              </div>
+            </div>
+          </div>
+           <div class="on-it-wrapper">
+             <div class="show-responsible" (click)="openResponsible(post.id!)">Show responsible employees</div>
+             <div class="show-responsible-bridge" (click)="openResponsible(post.id!)"></div>
+            <button mat-raised-button class="im-on-it-btn" [class.active]="post['userOnIt']" (click)="toggleOnIt(post)">
+              i'm on it
+            </button>
+          </div>
+        </div>
+
+        <div class="comments-center">
+          <div class="comments-trigger">
+            <button mat-button class="action-with-label" (click)="toggleComments(post.id!)">
+              <mat-icon>comment</mat-icon>
+              <span class="action-label">{{ post.commentCount }} Comments</span>
+            </button>
+            <div class="commenters-flyout" *ngIf="post['uniqueCommenters']?.length" >
+              <div class="commenter" *ngFor="let c of post['uniqueCommenters'] | slice:0:20">{{ $any(c).authorName }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="post-actions-menu right-actions" *ngIf="canManagePost(post)">
+          <button mat-icon-button [matMenuTriggerFor]="menu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="pinPost(post.id!, !post.isPinned)">
+              <mat-icon>{{ post.isPinned ? 'push_pin' : 'push_pin' }}</mat-icon>
+              {{ post.isPinned ? 'Unpin' : 'Pin' }}
+            </button>
+            <button mat-menu-item *ngIf="post.type === 'task'" 
+                    (click)="markTaskDone(post.id!)">
+              <mat-icon>check</mat-icon>
+              Mark as Done
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+
+      <!-- Responsible overlay -->
+      <div class="responsible-overlay" *ngIf="showResponsibleForPostId === post.id">
+        <div class="overlay-backdrop" (click)="closeResponsible()"></div>
+        <div class="overlay-dialog">
+          <h3>Responsible employees</h3>
+          <div class="names-list">
+            <div class="name-item" *ngFor="let u of post['onItUsers']">{{ u.name }}</div>
+            <div class="name-item" *ngIf="!post['onItUsers'] || post['onItUsers'].length === 0" style="color:#777;">No one yet</div>
+          </div>
+          <button mat-stroked-button (click)="closeResponsible()">Close</button>
+        </div>
+      </div>
+
+      <!-- Comments Section -->
+      <div class="comments-section" *ngIf="showCommentSection[post.id!]">
+        <div class="comments-list" *ngIf="post['commentTree'] && post['commentTree'].length > 0">
+          <ng-template #renderNodes let-nodes>
+            <div *ngFor="let node of nodes" class="comment-item" [style.margin-left.px]="node.depth * 24">
+              <div class="comment-author" [routerLink]="['/profile', node['authorUserId'] || node.authorId]" style="cursor:pointer;">
+                <div class="avatar small">{{ node.authorName.charAt(0).toUpperCase() }}</div>
+                <strong>{{ node.authorName }}</strong>
+                <span class="comment-time">{{ formatDate(node.createdAt) }}</span>
+              </div>
+              <div class="comment-content">{{ node.content }}</div>
+              <div class="comment-actions">
+                <div class="reaction-trigger small">
+                  <button class="reaction-circle small" [ngClass]="[node['userReaction'] ? 'active' : '', node['userReaction']?.type || '']" (click)="onCommentReactionButtonClick(node)">
+                    <span class="emoji">{{ getReactionEmoji(node['userReaction']?.type || ReactionType.LIKE) }}</span>
+                    <span *ngIf="node['userReaction']" class="label">{{ getReactionLabel(node['userReaction']?.type) }}</span>
+                  </button>
+                  <div class="reactions-flyout">
+                    <div class="reaction-option" (click)="toggleCommentReaction(node.id!, ReactionType.LIKE)">
+                      <div class="legend">Like</div>
+                      <div class="emoji">{{ getReactionEmoji(ReactionType.LIKE) }}</div>
+                    </div>
+                    <div class="reaction-option" (click)="toggleCommentReaction(node.id!, ReactionType.CELEBRATE)">
+                      <div class="legend">Celebrate</div>
+                      <div class="emoji">{{ getReactionEmoji(ReactionType.CELEBRATE) }}</div>
+                    </div>
+                    <div class="reaction-option" (click)="toggleCommentReaction(node.id!, ReactionType.SUPPORT)">
+                      <div class="legend">Support</div>
+                      <div class="emoji">{{ getReactionEmoji(ReactionType.SUPPORT) }}</div>
+                    </div>
+                    <div class="reaction-option" (click)="toggleCommentReaction(node.id!, ReactionType.LOVE)">
+                      <div class="legend">Love</div>
+                      <div class="emoji">{{ getReactionEmoji(ReactionType.LOVE) }}</div>
+                    </div>
+                    <div class="reaction-option" (click)="toggleCommentReaction(node.id!, ReactionType.INSIGHTFUL)">
+                      <div class="legend">Insightful</div>
+                      <div class="emoji">{{ getReactionEmoji(ReactionType.INSIGHTFUL) }}</div>
+                    </div>
+                    <div class="reaction-option" (click)="toggleCommentReaction(node.id!, ReactionType.CURIOUS)">
+                      <div class="legend">Curious</div>
+                      <div class="emoji">{{ getReactionEmoji(ReactionType.CURIOUS) }}</div>
+                    </div>
+                  </div>
+                </div>
+                <button mat-button class="reply-btn" (click)="toggleReply(node.id!)">Reply</button>
+              </div>
+
+              <div class="comment-input reply-input" *ngIf="showReplyInput[node.id!]">
+                <mat-form-field appearance="outline" style="width: 100%;">
+                  <mat-label>Write a reply...</mat-label>
+                  <textarea matInput #replyInput rows="2" placeholder="Write a reply..." (keyup)="onTextareaKeyup($event, 'reply', post.id!, replyInput, node.id!)"></textarea>
+                </mat-form-field>
+                <button mat-raised-button color="primary"
+                        (click)="addReply(post.id!, node.id!, replyInput.value); replyInput.value = ''"
+                        [disabled]="!replyInput.value || !replyInput.value.trim()">Reply</button>
+
+                <div class="mention-panel" *ngIf="mention.active && mention.context.type === 'reply' && mention.context.commentId === node.id">
+                  <input class="mention-search" [value]="mention.search" (input)="onMentionSearchChange($any($event.target).value)" placeholder="Search users..." />
+                  <div class="mention-list">
+                    <div class="mention-item" *ngFor="let u of filteredUsers" (click)="selectMention(u)">
+                      <div class="mention-name">{{ u.name }}</div>
+                      <div class="mention-email">{{ u.email }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <ng-container *ngIf="node.children && node.children.length > 0">
+                <ng-container *ngTemplateOutlet="renderNodes; context: {$implicit: node.children}"></ng-container>
+              </ng-container>
+            </div>
+          </ng-template>
+
+          <ng-container *ngTemplateOutlet="renderNodes; context: {$implicit: post['commentTree']}"></ng-container>
+        </div>
+
+        <div class="comment-input">
+          <mat-form-field appearance="outline" style="width: 100%;">
+            <mat-label>Write a comment...</mat-label>
+            <textarea matInput #commentInput rows="2" placeholder="Write a comment..." (keyup)="onTextareaKeyup($event, 'post', post.id!, commentInput)"></textarea>
+          </mat-form-field>
+          <button mat-raised-button color="primary" 
+                  (click)="addComment(post.id!, commentInput.value); commentInput.value = ''"
+                  [disabled]="!commentInput.value || !commentInput.value.trim()">
+            Post
+          </button>
+
+          <div class="mention-panel" *ngIf="mention.active && mention.context.type === 'post' && mention.context.postId === post.id">
+            <input class="mention-search" [value]="mention.search" (input)="onMentionSearchChange($any($event.target).value)" placeholder="Search users..." />
+            <div class="mention-list">
+              <div class="mention-item" *ngFor="let u of filteredUsers" (click)="selectMention(u)">
+                <div class="mention-name">{{ u.name }}</div>
+                <div class="mention-email">{{ u.email }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="posts.length === 0" class="empty-state">
+      <mat-icon>inbox</mat-icon>
+      <p>No posts yet. Be the first to create a post!</p>
+    </div>
+  </div>
+
+  <!-- Departments side panel overlay -->
+  <div class="filters-overlay" *ngIf="showDepartmentsPanel">
+    <div class="filters-backdrop" (click)="closeDepartmentsPanel()"></div>
+    <div class="filters-panel">
+      <div class="filters-panel-header">
+        <h3>Departments</h3>
+      </div>
+      <div class="filters-panel-content">
+        <button mat-button (click)="toggleAllDepartmentsToggle()" style="margin-bottom: 6px;">
+          <mat-icon style="margin-right:6px;">{{ allDepartmentsSelected ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+          All Departments
+        </button>
+        <div class="filters-scroll">
+          <button mat-button class="filter-option" *ngFor="let d of availableDepartments" (click)="toggleDepartment(d, !selectedDepartments.includes(d))">
+            <mat-icon style="margin-right:6px;">{{ selectedDepartments.includes(d) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+            {{ d }}
+          </button>
+        </div>
+      </div>
+      <div class="filters-panel-actions">
+        <button mat-stroked-button (click)="closeDepartmentsPanel()">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
